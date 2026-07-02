@@ -6,6 +6,11 @@ import { columns } from "@/components/table/columns";
 import { DataTable } from "@/components/table/DataTable";
 import { getRecentAppointmentList } from "@/lib/actions/appointment.actions";
 
+// Skip SSG: this page calls Appwrite via `getRecentAppointmentList()`.
+// Next.js would otherwise pre-render at build time, which fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
+
 /**
  * AdminPage component renders the admin dashboard page.
  * It fetches the recent appointment list and displays various statistics

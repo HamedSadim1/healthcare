@@ -5,6 +5,11 @@ import RegisterForm from "@/components/forms/RegisterForm";
 import { getPatient, getUser } from "@/lib/actions/patient.actions";
 import { year } from "@/constants";
 
+// Skip SSG: this page calls Appwrite via `getUser()`/`getPatient()`.
+// Same rationale as /admin: pre-rendering at build time fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
+
 /**
  * The Register component is an asynchronous function that handles the registration process for a patient.
  * It fetches the user and patient data based on the provided userId parameter.

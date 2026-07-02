@@ -6,6 +6,11 @@ import { Doctors, year } from "@/constants";
 import { getAppointment } from "@/lib/actions/appointment.actions";
 import { formatDateTime } from "@/lib/utils";
 
+// Skip SSG: this page calls Appwrite via `getAppointment()`.
+// Same rationale as /admin: pre-rendering at build time fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
+
 /**
  * Component to display the success message after an appointment request is submitted.
  *

@@ -4,6 +4,11 @@ import { AppointmentForm } from "@/components/forms/AppointmentForm";
 import { getPatient } from "@/lib/actions/patient.actions";
 import { year } from "@/constants";
 
+// Skip SSG: this page calls Appwrite via `getPatient()`.
+// Same rationale as /admin: pre-rendering at build time fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
+
 /**
  * Appointment component for creating a new appointment for a patient.
  *
