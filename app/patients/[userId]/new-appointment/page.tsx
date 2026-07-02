@@ -1,8 +1,14 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
 import { AppointmentForm } from "@/components/forms/AppointmentForm";
 import { getPatient } from "@/lib/actions/patient.actions";
 import { year } from "@/constants";
+
+// Skip SSG: this page calls Appwrite via `getPatient()`.
+// Same rationale as /admin: pre-rendering at build time fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
 
 /**
  * Appointment component for creating a new appointment for a patient.
@@ -19,6 +25,11 @@ const Appointment = async ({ params }: SearchParamProps) => {
   // get the patient's information based on the userId
   const patient = await getPatient(userId);
 
+  // Reaching this page without a registered patient is a 404 — the patient
+  // record must exist before `/new-appointment` is meaningful. `notFound()`
+  // narrows `patient` from `Patient | null | undefined` to `Patient` below.
+  if (!patient) notFound();
+
   return (
     <div className="flex h-screen max-h-screen">
       <section className="remove-scrollbar container my-auto">
@@ -32,7 +43,7 @@ const Appointment = async ({ params }: SearchParamProps) => {
           />
 
           <AppointmentForm
-            patientId={patient?.$id}
+            patientId={patient.$id}
             userId={userId}
             type="create"
           />

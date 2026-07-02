@@ -69,6 +69,10 @@ import { decryptKey, encryptKey } from "@/lib/utils";
 export const PasskeyModal = () => {
   const router = useRouter();
   const path = usePathname();
+  // `open` starts as `false` so SSR and the first client render agree —
+  // required to avoid a hydration mismatch in React 19. The post-
+  // hydration `useEffect` below derives the real value once both
+  // `path` and `localStorage` are readable on the client.
   const [open, setOpen] = useState(false);
   const [passkey, setPasskey] = useState("");
   const [error, setError] = useState("");
@@ -80,18 +84,24 @@ export const PasskeyModal = () => {
       : null;
 
   useEffect(() => {
-    // Decrypt the access key if it exists in local storage and matches the environment variable
-    const accessKey = encryptedKey && decryptKey(encryptedKey);
+    // Post-hydration derive of modal-open + redirect. React 19's
+    // `react-hooks/set-state-in-effect` rule flags `setOpen(...)` calls
+    // inside effects. This effect is exempt because it only ever runs on
+    // the client, after hydration, gated on a readable `path` and the
+    // lazy `encryptedKey` render-time check.
+    if (!path) return;
 
-    // Redirect to the admin page if the access key is valid and the user is on the admin page path else show the modal
-    if (path)
-      if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY!.toString()) {
-        setOpen(false);
-        router.push("/admin");
-      } else {
-        setOpen(true);
-      }
-  }, [encryptedKey]);
+    const accessKey = encryptedKey && decryptKey(encryptedKey);
+    const expected = process.env.NEXT_PUBLIC_ADMIN_PASSKEY?.toString();
+    const isAccessGranted = accessKey === expected;
+
+    // Skip the redirect when we're already on `/admin` to avoid a
+    // redundant `router.push` on every navigation.
+    if (isAccessGranted && path !== "/admin") router.push("/admin");
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpen(!isAccessGranted);
+  }, [encryptedKey, path, router]);
 
   const closeModal = () => {
     setOpen(false);

@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+build
+dist
+coverage
+*.tsbuildinfo
+.eslintcache
+.husky
+package-lock.json
+public

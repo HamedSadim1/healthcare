@@ -52,6 +52,11 @@ const Home = async ({ searchParams }: SearchParamProps) => {
         width={1000}
         alt="patient"
         className="side-img max-w-[50%]"
+        /* `priority` makes this <Image> load eagerly with `fetchPriority="high"`
+           + adds a `<link rel="preload">` hint. It's the documented Next.js
+           fix for the LCP-element console warning, since the onboarding hero
+           is above the fold (split-screen layout: form left, image right). */
+        priority
       />
     </div>
   );

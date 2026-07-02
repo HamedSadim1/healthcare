@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { SelectItem } from "@/components/ui/select";
@@ -49,16 +49,23 @@ export const AppointmentForm = ({
 }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  // Capture mount timestamp via lazy `useState` initializer so it stays
+  // stable across re-renders. Otherwise the default `schedule` value
+  // (`new Date(...)`) would shift on every render, breaking React 19's
+  // `react-hooks/purity` rule.
+  const [mountTime] = useState(() => Date.now());
 
   const AppointmentFormValidation = getAppointmentSchema(type);
 
   const form = useForm<z.infer<typeof AppointmentFormValidation>>({
-    resolver: zodResolver(AppointmentFormValidation),
+    resolver: zodResolver(AppointmentFormValidation) as Resolver<
+      z.infer<typeof AppointmentFormValidation>
+    >,
     defaultValues: {
       primaryPhysician: appointment ? appointment?.primaryPhysician : "",
       schedule: appointment
         ? new Date(appointment.schedule!)
-        : new Date(Date.now()),
+        : new Date(mountTime),
       reason: appointment ? appointment.reason : "",
       note: appointment?.note || "",
       cancellationReason: appointment?.cancellationReason || "",

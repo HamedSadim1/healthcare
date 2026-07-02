@@ -1,10 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Doctors, year } from "@/constants";
 import { getAppointment } from "@/lib/actions/appointment.actions";
 import { formatDateTime } from "@/lib/utils";
+
+// Skip SSG: this page calls Appwrite via `getAppointment()`.
+// Same rationale as /admin: pre-rendering at build time fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
 
 /**
  * Component to display the success message after an appointment request is submitted.
@@ -23,6 +29,12 @@ const RequestSuccess = async ({ searchParams, params }: SearchParamProps) => {
   const appointmentId = (searchParamsResolved?.appointmentId as string) || "";
 
   const appointment = await getAppointment(appointmentId);
+
+  // Bad/missing appointmentId means there's no record to celebrate. `notFound()`
+  // narrows `appointment` from `Appointment | undefined` to `Appointment` below
+  // so the doctor lookup + schedule formatting accesses don't have to defensively
+  // type-check undefined for what is fundamentally a 404 case.
+  if (!appointment) notFound();
 
   const doctor = Doctors.find(
     (doctor) => doctor.name === appointment.primaryPhysician

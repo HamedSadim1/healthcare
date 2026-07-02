@@ -1,9 +1,14 @@
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import RegisterForm from "@/components/forms/RegisterForm";
 import { getPatient, getUser } from "@/lib/actions/patient.actions";
 import { year } from "@/constants";
+
+// Skip SSG: this page calls Appwrite via `getUser()`/`getPatient()`.
+// Same rationale as /admin: pre-rendering at build time fails when the
+// Appwrite project is paused or env vars are unset in CI.
+export const dynamic = "force-dynamic";
 
 /**
  * The Register component is an asynchronous function that handles the registration process for a patient.
@@ -19,7 +24,14 @@ const Register = async ({ params }: SearchParamProps) => {
   const { userId } = await params;
   // fetch the user and patient data based on the userId
   const user = await getUser(userId);
-  // fetch the patient data based on the userId
+
+  // Without a valid Appwrite user the registration form is meaningless.
+  // `notFound()` narrows `user` from `Models.User | undefined` to `Models.User`
+  // below so the downstream `<RegisterForm user={user} />` is type-safe.
+  // Checked before getPatient so we save one Appwrite roundtrip on the 404 path.
+  if (!user) notFound();
+
+  // fetch the patient data based on the userId (only useful if user exists)
   const patient = await getPatient(userId);
 
   // if the patient already exists, redirect to the new appointment page

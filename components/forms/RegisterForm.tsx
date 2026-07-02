@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Form, FormControl } from "@/components/ui/form";
@@ -90,7 +90,9 @@ const RegisterForm = ({ user }: { user: User }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof PatientFormValidation>>({
-    resolver: zodResolver(PatientFormValidation),
+    resolver: zodResolver(PatientFormValidation) as Resolver<
+      z.infer<typeof PatientFormValidation>
+    >,
     defaultValues: {
       ...PatientFormDefaultValues,
       name: user.name,
@@ -224,7 +226,7 @@ const RegisterForm = ({ user }: { user: User }) => {
                   <RadioGroup
                     className="flex h-11 gap-6 xl:justify-between"
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    defaultValue={field.value as string | undefined}
                   >
                     {GenderOptions.map((option, i) => (
                       <div key={option + i} className="radio-group">
@@ -400,7 +402,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             label="Scanned Copy of Identification Document"
             renderSkeleton={(field) => (
               <FormControl>
-                <FileUploader files={field.value} onChange={field.onChange} />
+                <FileUploader files={field.value as File[] | undefined} onChange={field.onChange} />
               </FormControl>
             )}
           />

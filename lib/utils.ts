@@ -1,5 +1,41 @@
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+/**
+ * Project-specific twMerge instance.
+ *
+ * Tailwind CSS v4 declares its theme tokens (colors, background images, …)
+ * dynamically via CSS variables, so `tailwind-merge`'s built-in static
+ * color dictionary is unaware of them. We extend `theme.colors` so the
+ * existing `bg-color`, `text-color`, `border-color`, `placeholder-color`,
+ * `divide-color`, `caret-color`, etc. groups all recognise our custom
+ * shades and `cn()` correctly resolves conflicts such as `bg-green-500`
+ * vs. `bg-dark-400` or `text-dark-700` vs. `text-red-400`.
+ */
+const projectColors = [
+  "green-500",
+  "green-600",
+  "blue-500",
+  "blue-600",
+  "red-500",
+  "red-600",
+  "red-700",
+  "light-200",
+  "dark-200",
+  "dark-300",
+  "dark-400",
+  "dark-500",
+  "dark-600",
+  "dark-700",
+] as const;
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    theme: {
+      color: [...projectColors],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
