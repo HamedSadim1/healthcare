@@ -49,6 +49,11 @@ export const AppointmentForm = ({
 }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  // Capture mount timestamp via lazy `useState` initializer so it stays
+  // stable across re-renders. Otherwise the default `schedule` value
+  // (`new Date(...)`) would shift on every render, breaking React 19's
+  // `react-hooks/purity` rule.
+  const [mountTime] = useState(() => Date.now());
 
   const AppointmentFormValidation = getAppointmentSchema(type);
 
@@ -60,7 +65,7 @@ export const AppointmentForm = ({
       primaryPhysician: appointment ? appointment?.primaryPhysician : "",
       schedule: appointment
         ? new Date(appointment.schedule!)
-        : new Date(Date.now()),
+        : new Date(mountTime),
       reason: appointment ? appointment.reason : "",
       note: appointment?.note || "",
       cancellationReason: appointment?.cancellationReason || "",
