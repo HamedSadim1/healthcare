@@ -4,7 +4,10 @@ import Link from "next/link";
 import { StatCard } from "@/components/StatCard";
 import { columns } from "@/components/table/columns";
 import { DataTable } from "@/components/table/DataTable";
-import { getRecentAppointmentList } from "@/lib/actions/appointment.actions";
+import {
+  type AppointmentCounts,
+  getRecentAppointmentList,
+} from "@/lib/actions/appointment.actions";
 
 // Skip SSG: this page calls Appwrite via `getRecentAppointmentList()`.
 // Next.js would otherwise pre-render at build time, which fails when the
@@ -32,8 +35,19 @@ export const dynamic = "force-dynamic";
  * );
  * ```
  */
+// Empty-state fallback for when Appwrite is unreachable (network blip, paused
+// project, missing env vars in CI). Keeps the dashboard layout visible with
+// zeros instead of 404'ing /admin on the entire ops team.
+const EMPTY_COUNTS: AppointmentCounts = {
+  totalCount: 0,
+  scheduledCount: 0,
+  pendingCount: 0,
+  cancelledCount: 0,
+  documents: [],
+};
+
 const AdminPage = async () => {
-  const appointments = await getRecentAppointmentList();
+  const appointments = (await getRecentAppointmentList()) ?? EMPTY_COUNTS;
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col space-y-14">
