@@ -2,7 +2,6 @@
 import { E164Number } from "libphonenumber-js/core";
 import Image from "next/image";
 import ReactDatePicker from "react-datepicker";
-import { Control } from "react-hook-form";
 import PhoneInput from "react-phone-number-input";
 
 import { Checkbox } from "./ui/checkbox";
@@ -28,8 +27,15 @@ export enum FormFieldType {
 }
 
 interface CustomProps {
-  control: Control<any>;
-  name: string;
+  // `control` and `name` are intentionally typed as `any` so this component
+  // can be reused across forms whose typed `Control<TFieldValues>` differs.
+  // React Hook Form's `Control<T>` is invariant in `T`, so a `Control<A>` is
+  // not safely assignable to `Control<B>` even when `B = any`, which causes
+  // errors under TypeScript 6 strict mode. The runtime behaviour is unchanged.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  control: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  name: any;
   label?: string;
   placeholder?: string;
   iconSrc?: string;
@@ -38,6 +44,7 @@ interface CustomProps {
   dateFormat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderSkeleton?: (field: any) => React.ReactNode;
   fieldType: FormFieldType;
 }

@@ -88,7 +88,7 @@ export const getRecentAppointmentList = async () => {
     };
 
     // reduce appointments to counts of scheduled, pending, and cancelled appointments and return the total count and the list of appointment documents
-    const counts = (appointments.documents as Appointment[]).reduce(
+    const counts = (appointments.documents as unknown as Appointment[]).reduce(
       (acc, appointment) => {
         switch (appointment.status) {
           case "scheduled":

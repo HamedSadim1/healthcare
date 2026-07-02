@@ -1,27 +1,85 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-green-500: #24AE7C;
+  --color-green-600: #0D2A1F;
+  --color-blue-500: #79B5EC;
+  --color-blue-600: #152432;
+  --color-red-500: #F37877;
+  --color-red-600: #3E1716;
+  --color-red-700: #F24E43;
+  --color-light-200: #E8E9E9;
+  --color-dark-200: #0D0F10;
+  --color-dark-300: #131619;
+  --color-dark-400: #1A1D21;
+  --color-dark-500: #363A3D;
+  --color-dark-600: #76828D;
+  --color-dark-700: #ABB8C4;
+
+  --background-image-appointments: url("/assets/images/appointments-bg.png");
+  --background-image-pending: url("/assets/images/pending-bg.png");
+  --background-image-cancelled: url("/assets/images/cancelled-bg.png");
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-caret-blink: caret-blink 1.25s ease-out infinite;
+
+  --breakpoint-2xl: 1400px;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  50% {
+    opacity: 0;
+  }
+}
 
 /* ========================================== TAILWIND STYLES */
-@layer base {
-  /* Remove scrollbar */
-  .remove-scrollbar::-webkit-scrollbar {
+@utility remove-scrollbar {
+  &::-webkit-scrollbar {
     width: 0px;
     height: 0px;
     border-radius: 0px;
   }
 
-  .remove-scrollbar::-webkit-scrollbar-track {
+  &::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  .remove-scrollbar::-webkit-scrollbar-thumb {
+  &::-webkit-scrollbar-thumb {
     background: transparent;
     border-radius: 0px;
   }
 
-  .remove-scrollbar::-webkit-scrollbar-thumb:hover {
-    /* background: #1e2238; */
+  &::-webkit-scrollbar-thumb:hover {
     background: transparent;
   }
 }
@@ -29,7 +87,7 @@
 @layer utilities {
   /* ===== UTILITIES */
   .sidebar {
-    @apply remove-scrollbar w-full max-w-72 flex-col overflow-auto bg-black-800 px-7 py-10;
+    @apply remove-scrollbar w-full max-w-72 flex-col overflow-auto bg-black px-7 py-10;
   }
 
   .left-sidebar {
@@ -45,7 +103,7 @@
   }
 
   .bg-image {
-    @apply bg-black-900 bg-light-rays bg-cover bg-no-repeat;
+    @apply bg-dark-400 bg-cover bg-no-repeat;
   }
 
   .header {
