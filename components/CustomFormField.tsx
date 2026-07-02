@@ -65,17 +65,15 @@ const RenderInput = <T extends FieldValues>({
               height={24}
               width={24}
               alt={props.iconAlt || "icon"}
-              className="ml-2"
-              /* `unoptimized` skips Next.js's image-optimization pipeline for
-                 this inline SVG icon. Without it, Next.js fires the console
-                 warning 'Image with src ".../user.svg" has either width or
-                 height modified, but not the other.' because Tailwind v4's
-                 preflight (`img { max-width: 100%; height: auto }`) creates
-                 an asymmetric CSS dimension modification against Next.js's
-                 internal w/h tracking. Per Next.js docs, `unoptimized` is a
-                 guaranteed silencer for static SVG icons and avoids the
-                 wasteful /next/image processing round-trip for a 24×24
-                 asset. */
+              /* `size-6` (Tailwind v4 utility: width 1.5rem + height 1.5rem)
+                 overrides Tailwind's preflight rule `img { height: auto }` via
+                 CSS specificity — class selectors (0,1,0) beat tag selectors
+                 (0,0,1) — and matches the HTML width/height attrs. Together
+                 with `unoptimized`, this silences Next.js's
+                 '...either width or height modified, but not the other'
+                 console warning for the form icons. See CustomFormField
+                 header comment for the full discussion. */
+              className="ml-2 size-6"
               unoptimized
             />
           )}
@@ -136,7 +134,7 @@ const RenderInput = <T extends FieldValues>({
             height={24}
             width={24}
             alt="calendar"
-            className="ml-2"
+            className="ml-2 size-6"
             unoptimized
           />
           <FormControl>
