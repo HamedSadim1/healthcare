@@ -86,26 +86,21 @@ export const PasskeyModal = () => {
   useEffect(() => {
     // Post-hydration derive of modal-open + redirect. React 19's
     // `react-hooks/set-state-in-effect` rule flags `setOpen(...)` calls
-    // inside effects, but this block is safe: the body is gated on a
-    // readable `path` and reads `localStorage` lazily via the render-time
-    // `encryptedKey` check, so it only ever runs on the client after
-    // hydration. Each `setOpen` call uses a targeted disable comment.
+    // inside effects. This effect is exempt because it only ever runs on
+    // the client, after hydration, gated on a readable `path` and the
+    // lazy `encryptedKey` render-time check.
     if (!path) return;
 
     const accessKey = encryptedKey && decryptKey(encryptedKey);
     const expected = process.env.NEXT_PUBLIC_ADMIN_PASSKEY?.toString();
     const isAccessGranted = accessKey === expected;
 
-    if (isAccessGranted) {
-      // Skip the redirect when we're already on `/admin` to avoid a
-      // redundant `router.push` on every navigation.
-      if (path !== "/admin") router.push("/admin");
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- post-hydration mount-time closure of the modal; see block comment above
-      setOpen(false);
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- post-hydration mount-time opening of the modal; see block comment above
-      setOpen(true);
-    }
+    // Skip the redirect when we're already on `/admin` to avoid a
+    // redundant `router.push` on every navigation.
+    if (isAccessGranted && path !== "/admin") router.push("/admin");
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpen(!isAccessGranted);
   }, [encryptedKey, path, router]);
 
   const closeModal = () => {
