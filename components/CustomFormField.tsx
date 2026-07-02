@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { E164Number } from "libphonenumber-js/core";
 import Image from "next/image";
 import ReactDatePicker from "react-datepicker";
+import { Control, ControllerRenderProps, FieldValues, Path } from "react-hook-form";
 import PhoneInput from "react-phone-number-input";
 
 import { Checkbox } from "./ui/checkbox";
@@ -26,16 +26,13 @@ export enum FormFieldType {
   SKELETON = "skeleton",
 }
 
-interface CustomProps {
-  // `control` and `name` are intentionally typed as `any` so this component
-  // can be reused across forms whose typed `Control<TFieldValues>` differs.
-  // React Hook Form's `Control<T>` is invariant in `T`, so a `Control<A>` is
-  // not safely assignable to `Control<B>` even when `B = any`, which causes
-  // errors under TypeScript 6 strict mode. The runtime behaviour is unchanged.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  name: any;
+// Generic over a Zod-inferred `FieldValues` (e.g. `z.infer<typeof X>`).
+// TypeScript infers T from the `control` prop at every call site, so the
+// existing `<CustomFormField control={form.control} name="email" />` JSX
+// stays untouched while `name` is still constrained to a real key of T.
+interface CustomProps<T extends FieldValues> {
+  control: Control<T>;
+  name: Path<T>;
   label?: string;
   placeholder?: string;
   iconSrc?: string;
@@ -44,41 +41,20 @@ interface CustomProps {
   dateFormat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderSkeleton?: (field: any) => React.ReactNode;
+  renderSkeleton?: (field: ControllerRenderProps<T, Path<T>>) => React.ReactNode;
   fieldType: FormFieldType;
 }
 
 /**
  * Renders different types of form fields based on the provided `fieldType` prop.
- *
- * @param {Object} param0 - The props object.
- * @param {any} param0.field - The field object containing form field properties.
- * @param {CustomProps} param0.props - The custom properties for the form field.
- * @returns {JSX.Element | null} The rendered form field component.
- *
- * @typedef {Object} CustomProps
- * @property {FormFieldType} fieldType - The type of the form field to render.
- * @property {string} [iconSrc] - The source URL for the icon image.
- * @property {string} [iconAlt] - The alt text for the icon image.
- * @property {string} [placeholder] - The placeholder text for the input field.
- * @property {boolean} [disabled] - Whether the field is disabled.
- * @property {string} [name] - The name of the field.
- * @property {string} [label] - The label text for the checkbox.
- * @property {boolean} [showTimeSelect] - Whether to show time selection in the date picker.
- * @property {React.ReactNode} [children] - The children elements for the select field.
- * @property {Function} [renderSkeleton] - The function to render a skeleton component.
- *
- * @enum {string} FormFieldType
- * @property {string} INPUT - Represents an input field.
- * @property {string} TEXTAREA - Represents a textarea field.
- * @property {string} PHONE_INPUT - Represents a phone input field.
- * @property {string} CHECKBOX - Represents a checkbox field.
- * @property {string} DATE_PICKER - Represents a date picker field.
- * @property {string} SELECT - Represents a select field.
- * @property {string} SKELETON - Represents a skeleton component.
  */
-const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
+const RenderInput = <T extends FieldValues>({
+  field,
+  props,
+}: {
+  field: ControllerRenderProps<T, Path<T>>;
+  props: CustomProps<T>;
+}) => {
   switch (props.fieldType) {
     case FormFieldType.INPUT:
       return (
@@ -90,6 +66,15 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
               width={24}
               alt={props.iconAlt || "icon"}
               className="ml-2"
+              /* Both dimensions set to "auto" so Next.js's Image-component
+                 warning is satisfied: Tailwind's preflight applies
+                 `height: auto` to every <img> via `img { max-width: 100%;
+                 height: auto; }`, which Next.js detects as an asymmetric
+                 CSS modification against our 24×24 HTML attrs. Declaring
+                 both `width: "auto"` and `height: "auto"` here makes the
+                 CSS modification symmetric and the image still renders at
+                 its intrinsic 24×24 size. */
+              style={{ width: "auto", height: "auto" }}
             />
           )}
           <FormControl>
@@ -148,8 +133,11 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
             src="/assets/icons/calendar.svg"
             height={24}
             width={24}
-            alt="user"
+            alt="calendar"
             className="ml-2"
+            /* See INPUT-case Image comment for why both dimensions are
+                 explicitly "auto" here. */
+            style={{ width: "auto", height: "auto" }}
           />
           <FormControl>
             <ReactDatePicker
@@ -188,16 +176,8 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
 
 /**
  * CustomFormField component renders a form field with a label and input based on the provided props.
- *
- * @param {CustomProps} props - The properties passed to the component.
- * @param {any} props.control - The control object used for form handling.
- * @param {string} props.name - The name of the form field.
- * @param {string} [props.label] - The label for the form field.
- * @param {FormFieldType} props.fieldType - The type of the form field.
- *
- * @returns {JSX.Element} The rendered form field component.
  */
-const CustomFormField = (props: CustomProps) => {
+const CustomFormField = <T extends FieldValues>(props: CustomProps<T>) => {
   const { control, name, label } = props;
 
   return (
@@ -210,7 +190,7 @@ const CustomFormField = (props: CustomProps) => {
           {props.fieldType !== FormFieldType.CHECKBOX && label && (
             <FormLabel className="shad-input-label">{label}</FormLabel>
           )}
-          <RenderInput field={field} props={props} />
+          <RenderInput<T> field={field} props={props} />
 
           <FormMessage className="shad-error" />
         </FormItem>
