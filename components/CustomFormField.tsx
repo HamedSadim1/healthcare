@@ -66,15 +66,17 @@ const RenderInput = <T extends FieldValues>({
               width={24}
               alt={props.iconAlt || "icon"}
               className="ml-2"
-              /* Both dimensions set to "auto" so Next.js's Image-component
-                 warning is satisfied: Tailwind's preflight applies
-                 `height: auto` to every <img> via `img { max-width: 100%;
-                 height: auto; }`, which Next.js detects as an asymmetric
-                 CSS modification against our 24×24 HTML attrs. Declaring
-                 both `width: "auto"` and `height: "auto"` here makes the
-                 CSS modification symmetric and the image still renders at
-                 its intrinsic 24×24 size. */
-              style={{ width: "auto", height: "auto" }}
+              /* `unoptimized` skips Next.js's image-optimization pipeline for
+                 this inline SVG icon. Without it, Next.js fires the console
+                 warning 'Image with src ".../user.svg" has either width or
+                 height modified, but not the other.' because Tailwind v4's
+                 preflight (`img { max-width: 100%; height: auto }`) creates
+                 an asymmetric CSS dimension modification against Next.js's
+                 internal w/h tracking. Per Next.js docs, `unoptimized` is a
+                 guaranteed silencer for static SVG icons and avoids the
+                 wasteful /next/image processing round-trip for a 24×24
+                 asset. */
+              unoptimized
             />
           )}
           <FormControl>
@@ -135,9 +137,7 @@ const RenderInput = <T extends FieldValues>({
             width={24}
             alt="calendar"
             className="ml-2"
-            /* See INPUT-case Image comment for why both dimensions are
-                 explicitly "auto" here. */
-            style={{ width: "auto", height: "auto" }}
+            unoptimized
           />
           <FormControl>
             <ReactDatePicker
